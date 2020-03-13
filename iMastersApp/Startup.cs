@@ -37,7 +37,7 @@ namespace iMastersApp
                     options.SignInScheme = "Cookies";
 
                     //Aponta para o nosso servidor de autenticação
-                    options.Authority = "http://localhost:5000";
+                    options.Authority = "http://localhost:32182";
                     options.RequireHttpsMetadata = false;
 
                     //Nome da nossa aplicação que tentará se autenticar no nosso servidor de identidade
@@ -74,6 +74,7 @@ namespace iMastersApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -105,6 +106,7 @@ namespace iMastersApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
