@@ -1,11 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Hosting
 @model ErrorViewModel
-@inject IHostingEnvironment host
+
+@inject IWebHostEnvironment Host
 
 @{
     var error = Model?.Error?.Error;
-    var errorDescription = host.IsDevelopment() ? Model?.Error?.ErrorDescription : null;
-    var request_id = Model?.Error?.RequestId;
+    var errorDescription = Host.IsDevelopment() ? Model?.Error?.ErrorDescription : null;
+    var requestId = Model?.Error?.RequestId;
 }
 
 <div class="error-page">
@@ -33,9 +35,9 @@
                 }
             </div>
 
-            @if (request_id != null)
+            @if (requestId != null)
             {
-                <div class="request-id">Request Id: @request_id</div>
+                <div class="request-id">Request Id: @requestId</div>
             }
         </div>
     </div>

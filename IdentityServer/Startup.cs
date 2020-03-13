@@ -1,54 +1,91 @@
-﻿using IdentityServer4.Services;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace IdentityServer
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        #region Called for ASPNETCORE_ENVIRONMENT=Development
+        public void ConfigureDevelopmentServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services
+                .AddControllersWithViews()
+                .AddRazorRuntimeCompilation()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    options.SerializerSettings.Formatting = Formatting.Indented;
+                });
 
-            // Configuração do Identity Server In-Memory
-            services.AddIdentityServer()
+            services
+                .AddIdentityServer()
                 .AddDeveloperSigningCredential()
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryClients(Config.GetClients())
                 .AddTestUsers(Config.GetUsers());
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void ConfigureDevelopment(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseBrowserLink();
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
-
-            //Habilitando o uso do Identity Server no nosso projeto
+            app.UseDeveloperExceptionPage();
             app.UseIdentityServer();
-
-            //Habilitando o uso de arquivos estáticos (Html, Css e etc) do nosso projeto
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
-
-            //Habilitando o uso de rota no projeto
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    "default", "{controller=Home}/{action=Index}/{id?}"
+                );
+            });
         }
+        #endregion
+
+        #region Called for ASPNETCORE_ENVIRONMENT=Production
+        public void ConfigureProductionServices(IServiceCollection services)
+        {
+            services
+                .AddControllersWithViews()
+                .AddRazorRuntimeCompilation()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                });
+
+            services
+                .AddIdentityServer()
+                .AddDeveloperSigningCredential()
+                .AddInMemoryIdentityResources(Config.GetIdentityResources())
+                .AddInMemoryClients(Config.GetClients())
+                .AddTestUsers(Config.GetUsers());
+        }
+
+        public void ConfigureProduction(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.UseExceptionHandler("/Home/Error");
+            app.UseIdentityServer();
+            app.UseHsts();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    "default", "{controller=Home}/{action=Index}/{id?}"
+                );
+            });
+        }
+        #endregion
     }
 }
